@@ -39,6 +39,9 @@ pub use frame_support::{
 };
 use pallet_transaction_payment::CurrencyAdapter;
 
+/// Import the account-linker pallet.
+pub use pallet_account_linker;
+
 /// added by SCS
 pub use pallet_teerex;
 
@@ -295,6 +298,12 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
+/// Configure the template pallet in pallets/template.
+impl pallet_account_linker::Config for Runtime {
+    type Event = Event;
+    type WeightInfo = pallet_account_linker::weights::SubstrateWeight<Runtime>;
+}
+
 parameter_types! {
 	pub const MomentsPerDay: Moment = 86_400_000; // [ms/d]
 }
@@ -323,6 +332,8 @@ construct_runtime!(
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
+
+		AccountLinkerModule: pallet_account_linker::{Pallet, Call, Storage, Event<T>},
 		// added by SCS
 		Teerex: pallet_teerex::{Pallet, Call, Storage, Event<T>},
 	}
