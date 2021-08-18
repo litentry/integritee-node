@@ -329,8 +329,8 @@ construct_runtime!(
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
 
 		AccountLinkerModule: pallet_account_linker::{Pallet, Call, Storage, Event<T>},
-		// added by SCS
-		Teerex: pallet_teerex::{Pallet, Call, Storage, Event<T>},
+		// added by SCS set fixed pallet index
+		Teerex: pallet_teerex::{Pallet, Call, Storage, Event<T>} = 100,
 	}
 );
 
