@@ -21,7 +21,7 @@ package = 'pallet-teerex'
 [dependencies.pallet-account-linker]
 default-features = false
 git = " https://github.com/litentry/litentry-pallets.git"
-branch = "sgx-exp"
+branch = "sgx-pallets"
 package = 'pallet-account-linker'
 
 [dependencies]
