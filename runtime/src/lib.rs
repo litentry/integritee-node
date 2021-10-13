@@ -63,8 +63,6 @@ pub use sp_runtime::{Perbill, Permill};
 /// Import the account-linker pallet.
 pub use pallet_account_linker;
 
-/// added by SCS
-pub use pallet_teerex;
 mod weights;
 
 /// An index to a block.
@@ -370,8 +368,8 @@ impl pallet_sudo::Config for Runtime {
 
 /// Configure the template pallet in pallets/template.
 impl pallet_account_linker::Config for Runtime {
-    type Event = Event;
-    type WeightInfo = pallet_account_linker::weights::SubstrateWeight<Runtime>;
+	type Event = Event;
+	type WeightInfo = pallet_account_linker::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -575,7 +573,7 @@ construct_runtime!(
 
 		AccountLinkerModule: pallet_account_linker::{Pallet, Call, Storage, Event<T>} = 99,
 		// added by SCS set fixed pallet index
-		Teerex: pallet_teerex::{Pallet, Call, Storage, Event<T>} = 100,
+		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 100,
 		}
 );
 
