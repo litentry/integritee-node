@@ -53,6 +53,10 @@ pub use frame_support::{
 use frame_system::EnsureRoot;
 pub use pallet_balances::Call as BalancesCall;
 /// added by Integritee
+pub use pallet_claims;
+/// added by Integritee
+pub use pallet_teeracle;
+/// added by Integritee
 pub use pallet_teerex;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
@@ -124,7 +128,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	/// Version of the runtime specification. A full-node will not attempt to use its native
 	/// runtime in substitute for the on-chain Wasm runtime unless all of `spec_name`,
 	/// `spec_version` and `authoring_version` are the same between Wasm and native.
-	spec_version: 2,
+	spec_version: 3,
 
 	/// Version of the implementation of the specification. Nodes are free to ignore this; it
 	/// serves only as an indication that the code is different; as long as the other two versions
@@ -387,6 +391,24 @@ impl pallet_teerex::Config for Runtime {
 }
 
 parameter_types! {
+	pub Prefix: &'static [u8] = b"Pay TEERs to the integriTEE account:";
+}
+
+/// added by Integritee
+impl pallet_claims::Config for Runtime {
+	type Event = Event;
+	type VestingSchedule = Vesting;
+	type Prefix = Prefix;
+	type MoveClaimOrigin = frame_system::EnsureRoot<AccountId>;
+	type WeightInfo = weights::pallet_claims::WeightInfo<Runtime>;
+}
+/// added by Integritee
+impl pallet_teeracle::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = ();
+}
+
+parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const ProposalBondMinimum: Balance = 100 * MILLITEER;
 	pub const SpendPeriod: BlockNumber = 6 * DAYS;
@@ -543,6 +565,12 @@ impl pallet_scheduler::Config for Runtime {
 	type WeightInfo = weights::pallet_scheduler::WeightInfo<Runtime>;
 }
 
+impl pallet_utility::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+	type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -558,6 +586,7 @@ construct_runtime!(
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 6,
 		Proxy: pallet_proxy::{Pallet, Call, Storage, Event<T>} = 7,
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 8,
+		Utility: pallet_utility::{Pallet, Call, Event} = 9,
 
 		// funds and fees
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
@@ -571,10 +600,14 @@ construct_runtime!(
 		// governance
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 30,
 
+		// utility
+		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 50,
+		Claims: pallet_claims::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 51,
+		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
+
+		// litentry
 		AccountLinkerModule: pallet_account_linker::{Pallet, Call, Storage, Event<T>} = 99,
-		// added by SCS set fixed pallet index
-		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 100,
-		}
+	}
 );
 
 /// The address format for describing accounts.
@@ -753,9 +786,12 @@ impl_runtime_apis! {
 			list_benchmark!(list, extra, pallet_proxy, Proxy);
 			list_benchmark!(list, extra, pallet_scheduler, Scheduler);
 			list_benchmark!(list, extra, pallet_teerex, Teerex);
+			list_benchmark!(list, extra, pallet_claims, Claims);
 			list_benchmark!(list, extra, pallet_timestamp, Timestamp);
 			list_benchmark!(list, extra, pallet_treasury, Treasury);
 			list_benchmark!(list, extra, pallet_vesting, Vesting);
+			list_benchmark!(list, extra, pallet_utility, Utility);
+			list_benchmark!(list, extra, pallet_teeracle, Teeracle);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -794,9 +830,12 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_proxy, Proxy);
 			add_benchmark!(params, batches, pallet_scheduler, Scheduler);
 			add_benchmark!(params, batches, pallet_teerex, Teerex);
+			add_benchmark!(params, batches, pallet_claims, Claims);
 			add_benchmark!(params, batches, pallet_timestamp, Timestamp);
 			add_benchmark!(params, batches, pallet_treasury, Treasury);
 			add_benchmark!(params, batches, pallet_vesting, Vesting);
+			add_benchmark!(params, batches, pallet_utility, Utility);
+			add_benchmark!(params, batches, pallet_teeracle, Teeracle);
 
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)
