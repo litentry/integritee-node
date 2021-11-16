@@ -601,12 +601,13 @@ construct_runtime!(
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 30,
 
 		// utility
-		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 50,
 		Claims: pallet_claims::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 51,
 		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
 
 		// litentry
 		AccountLinkerModule: pallet_account_linker::{Pallet, Call, Storage, Event<T>} = 99,
+		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 100,
+
 	}
 );
 

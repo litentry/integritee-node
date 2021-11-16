@@ -4,7 +4,7 @@ edition = '2018'
 homepage = 'https://integritee.network/'
 license = 'Apache2'
 name = 'integritee-node-runtime'
-repository = 'https://github.com/integritee-network/integritee-node'
+repository = 'https://github.com/litentry/integritee-node'
 version = '0.9.3'
 
 [package.metadata.docs.rs]
