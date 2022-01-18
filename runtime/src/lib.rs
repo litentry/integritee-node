@@ -40,7 +40,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
-use frame_support::traits::{Contains, Imbalance, InstanceFilter, OnUnbalanced};
+use frame_support::traits::{EqualPrivilegeOnly, Imbalance, InstanceFilter, OnUnbalanced};
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{KeyOwnerProofSystem, Randomness, StorageInfo},
@@ -60,12 +60,10 @@ pub use pallet_teeracle;
 pub use pallet_teerex;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
+use scale_info::TypeInfo;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
-
-/// Import the account-linker pallet.
-pub use pallet_account_linker;
 
 mod weights;
 
@@ -128,7 +126,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	/// Version of the runtime specification. A full-node will not attempt to use its native
 	/// runtime in substitute for the on-chain Wasm runtime unless all of `spec_name`,
 	/// `spec_version` and `authoring_version` are the same between Wasm and native.
-	spec_version: 3,
+	spec_version: 6,
 
 	/// Version of the implementation of the specification. Nodes are free to ignore this; it
 	/// serves only as an indication that the code is different; as long as the other two versions
@@ -149,7 +147,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	/// index.
 	///
 	/// It need *not* change when a new module is added or when a dispatchable is added.
-	transaction_version: 1,
+	transaction_version: 2,
 };
 
 /// This determines the average expected block time that we are targeting.
@@ -158,7 +156,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 /// up by `pallet_aura` to implement `fn slot_duration()`.
 ///
 /// Change this to adjust the block time.
-pub const MILLISECS_PER_BLOCK: u64 = 6000;
+pub const MILLISECS_PER_BLOCK: u64 = 12000;
 
 // NOTE: Currently it is not possible to change the slot duration after the chain has started.
 //       Attempting to do so will brick block production.
@@ -221,29 +219,10 @@ parameter_types! {
 	pub const SS58Prefix: u8 = 13;
 }
 
-pub struct BaseFilter;
-impl Contains<Call> for BaseFilter {
-	//Block send extrinsics for mainnent before official token generation event
-	fn contains(call: &Call) -> bool {
-		!matches!(
-			call,
-			Call::Balances(..) |
-				Call::Treasury(..) |
-				Call::Vesting(_) | Call::Teerex(_) |
-				Call::Proxy(_) | Call::Scheduler(_) |
-				Call::Multisig(_)
-		)
-	}
-}
-
 // Configure FRAME pallets to include in runtime.
 
 impl frame_system::Config for Runtime {
-	#[cfg(not(feature = "mainnet-launch"))]
 	type BaseCallFilter = frame_support::traits::Everything;
-	//Block send extrinsics for mainnet before official token generation event
-	#[cfg(feature = "mainnet-launch")]
-	type BaseCallFilter = BaseFilter;
 	/// Block & extrinsics weights: base values and limits.
 	type BlockWeights = BlockWeights;
 	/// The maximum length of a block (in bytes).
@@ -290,6 +269,7 @@ impl frame_system::Config for Runtime {
 	type SS58Prefix = SS58Prefix;
 	/// The set code logic, just the default since we're not a parachain.
 	type OnSetCode = ();
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
@@ -321,6 +301,8 @@ impl pallet_grandpa::Config for Runtime {
 	type HandleEquivocation = ();
 
 	type WeightInfo = ();
+
+	type MaxAuthorities = MaxAuthorities;
 }
 
 parameter_types! {
@@ -342,6 +324,7 @@ parameter_types! {
 	pub const TransactionByteFee: u128 = MICROTEER;
 	pub const MaxLocks: u32 = 50;
 	pub const MaxReserves: u32 = 50;
+	pub const OperationalFeeMultiplier: u8 = 5;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -361,6 +344,7 @@ impl pallet_balances::Config for Runtime {
 impl pallet_transaction_payment::Config for Runtime {
 	type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees>;
 	type TransactionByteFee = TransactionByteFee;
+	type OperationalFeeMultiplier = OperationalFeeMultiplier;
 	type WeightToFee = IdentityFee<Balance>;
 	type FeeMultiplierUpdate = ();
 }
@@ -368,12 +352,6 @@ impl pallet_transaction_payment::Config for Runtime {
 impl pallet_sudo::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
-}
-
-/// Configure the template pallet in pallets/template.
-impl pallet_account_linker::Config for Runtime {
-	type Event = Event;
-	type WeightInfo = pallet_account_linker::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -402,10 +380,15 @@ impl pallet_claims::Config for Runtime {
 	type MoveClaimOrigin = frame_system::EnsureRoot<AccountId>;
 	type WeightInfo = weights::pallet_claims::WeightInfo<Runtime>;
 }
+parameter_types! {
+	pub const MaxWhitelistedReleases: u32 = 10;
+}
+
 /// added by Integritee
 impl pallet_teeracle::Config for Runtime {
 	type Event = Event;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_teeracle::WeightInfo<Runtime>;
+	type MaxWhitelistedReleases = MaxWhitelistedReleases;
 }
 
 parameter_types! {
@@ -467,7 +450,17 @@ parameter_types! {
 
 /// The type used to represent the kinds of proxying allowed.
 #[derive(
-	Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, RuntimeDebug, MaxEncodedLen,
+	Copy,
+	Clone,
+	Eq,
+	PartialEq,
+	Ord,
+	PartialOrd,
+	Encode,
+	Decode,
+	RuntimeDebug,
+	MaxEncodedLen,
+	TypeInfo,
 )]
 pub enum ProxyType {
 	Any,         //any transactions
@@ -489,23 +482,23 @@ impl InstanceFilter<Call> for ProxyType {
 			ProxyType::Any => true,
 			ProxyType::NonTransfer => matches!(
 				c,
-				Call::System(..) |
-				Call::Timestamp(..) |
+				Call::System {..} |
+				Call::Timestamp {..} |
 				// Specifically omitting Indices `transfer`, `force_transfer`
 				// Specifically omitting the entire Balances pallet
-				Call::Grandpa(..) |
-				Call::Treasury(..) |
-//				Call::Vesting(pallet_vesting::Call::vest(..)) |
-//				Call::Vesting(pallet_vesting::Call::vest_other(..)) |
+				Call::Grandpa {..} |
+				Call::Treasury {..} |
+//				Call::Vesting(pallet_vesting::Call::vest {..}) |
+//				Call::Vesting(pallet_vesting::Call::vest_other {..}) |
 				// Specifically omitting Vesting `vested_transfer`, and `force_vested_transfer`
-				Call::Proxy(..) |
-				Call::Multisig(..)
+				Call::Proxy {..} |
+				Call::Multisig {..}
 			),
 			ProxyType::Governance => {
-				matches!(c, Call::Treasury(..))
+				matches!(c, Call::Treasury { .. })
 			},
 			ProxyType::CancelProxy => {
-				matches!(c, Call::Proxy(pallet_proxy::Call::reject_announcement(..)))
+				matches!(c, Call::Proxy(pallet_proxy::Call::reject_announcement { .. }))
 			},
 		}
 	}
@@ -563,11 +556,15 @@ impl pallet_scheduler::Config for Runtime {
 	type ScheduleOrigin = EnsureRoot<AccountId>;
 	type MaxScheduledPerBlock = MaxScheduledPerBlock;
 	type WeightInfo = weights::pallet_scheduler::WeightInfo<Runtime>;
+	type OriginPrivilegeCmp = EqualPrivilegeOnly;
+	type PreimageProvider = ();
+	type NoPreimagePostponement = ();
 }
 
 impl pallet_utility::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
+	type PalletsOrigin = OriginCaller;
 	type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
 }
 
@@ -601,13 +598,9 @@ construct_runtime!(
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 30,
 
 		// utility
+		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 50,
 		Claims: pallet_claims::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 51,
 		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
-
-		// litentry
-		AccountLinkerModule: pallet_account_linker::{Pallet, Call, Storage, Event<T>} = 99,
-		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 100,
-
 	}
 );
 
@@ -635,7 +628,7 @@ pub type Executive = frame_executive::Executive<
 	Block,
 	frame_system::ChainContext<Runtime>,
 	Runtime,
-	AllPallets,
+	AllPalletsReversedWithSystemFirst,
 >;
 
 impl_runtime_apis! {
@@ -655,7 +648,7 @@ impl_runtime_apis! {
 
 	impl sp_api::Metadata<Block> for Runtime {
 		fn metadata() -> OpaqueMetadata {
-			Runtime::metadata().into()
+			OpaqueMetadata::new(Runtime::metadata().into())
 		}
 	}
 
