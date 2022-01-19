@@ -573,7 +573,6 @@ impl pallet_utility::Config for Runtime {
 
 impl pallet_credit_score::Config for Runtime {
 	type Event = Event;
-	// type Call = Call;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
