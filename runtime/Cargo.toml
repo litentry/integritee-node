@@ -33,6 +33,8 @@ pallet-teerex = { default-features = false, git = "https://github.com/integritee
 pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "master" }
 pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "master" }
 
+pallet-credit-score = { path = "../pallets/credit-score", default-features = false}
+
 sp-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-block-builder = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "master" }
 sp-consensus-aura = { version = "0.10.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
@@ -101,6 +103,7 @@ std = [
 	"pallet-proxy/std",
 	"pallet-utility/std",
 	"pallet-teeracle/std",
+	"pallet-credit-score/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking",

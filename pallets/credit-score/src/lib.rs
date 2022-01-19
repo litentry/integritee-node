@@ -2,9 +2,6 @@
 
 pub use pallet::*;
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
-
 #[frame_support::pallet]
 pub mod pallet {
 	use frame_support::pallet_prelude::*;
@@ -28,15 +25,17 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-		pub fn report_credit_score(origin: OriginFor<T>, account: T::AccountId, score: u32) -> DispatchResult {
-		
-			// TODO add the is_registered_enclave as a trait in teerex pallet. 
+		pub fn report_credit_score(
+			origin: OriginFor<T>,
+			account: T::AccountId,
+			score: u32,
+		) -> DispatchResult {
+			// TODO add the is_registered_enclave as a trait in teerex pallet.
 			// then call it to verify the credit score report from verified TEE device.
 			let _who = ensure_signed(origin)?;
-		
+
 			Self::deposit_event(Event::CreditScoreReport(account, score));
 			Ok(())
 		}
-
 	}
 }

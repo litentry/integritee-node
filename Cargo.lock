@@ -2326,6 +2326,7 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-claims",
+ "pallet-credit-score",
  "pallet-grandpa",
  "pallet-multisig",
  "pallet-proxy",
