@@ -28,7 +28,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-		pub fn do_something(origin: OriginFor<T>, account: T::AccountId, score: u32) -> DispatchResult {
+		pub fn report_credit_score(origin: OriginFor<T>, account: T::AccountId, score: u32) -> DispatchResult {
 		
 			// TODO add the is_registered_enclave as a trait in teerex pallet. 
 			// then call it to verify the credit score report from verified TEE device.
