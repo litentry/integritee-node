@@ -1,0 +1,45 @@
+[package]
+authors = ['Litentry Dev']
+description = 'Litentry pallet for TEE device report account credit score.'
+edition = '2021'
+homepage = 'https://litentry.com'
+name = 'pallet-credit-score'
+repository = 'https://github.com/litentry/integritee-node'
+version = '0.1.0'
+
+[package.metadata.docs.rs]
+targets = ['x86_64-unknown-linux-gnu']
+
+# alias "parity-scale-code" to "codec"
+[dependencies.codec]
+default-features = false
+features = ['derive']
+package = 'parity-scale-codec'
+version = '2.0.0'
+
+[dependencies]
+
+frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-io = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master" }
+sp-runtime = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master", optional = true }
+sp-core = { version = "4.1.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "master", optional = true }
+
+scale-info = { version = "1.0", default-features = false, features = ["derive"] }
+log = { version = "0.4.14", default-features = false }
+sha2 = { default-features = false, version = "0.9.5" }
+ripemd160 = {default-features = false, version = "0.9.1" }
+
+[features]
+default = ['std']
+std = [
+    'codec/std',
+    'frame-support/std',
+    'frame-system/std',
+    "sp-io/std",
+    "sp-std/std",
+    "sha2/std",
+    "ripemd160/std",
+    "log/std",
+]

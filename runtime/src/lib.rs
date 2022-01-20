@@ -65,6 +65,9 @@ use scale_info::TypeInfo;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
+/// litentry pallet
+pub use pallet_credit_score;
+
 mod weights;
 
 /// An index to a block.
@@ -568,6 +571,10 @@ impl pallet_utility::Config for Runtime {
 	type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
 }
 
+impl pallet_credit_score::Config for Runtime {
+	type Event = Event;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -601,6 +608,9 @@ construct_runtime!(
 		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 50,
 		Claims: pallet_claims::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 51,
 		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
+
+		// litentry
+		CreditScore: pallet_credit_score::{Pallet, Call, Storage, Event<T>} = 60,
 	}
 );
 
