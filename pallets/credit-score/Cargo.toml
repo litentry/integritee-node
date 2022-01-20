@@ -1,9 +1,8 @@
 [package]
 authors = ['Litentry Dev']
-description = 'FRAME pallet template for defining custom runtime logic.'
+description = 'Litentry pallet for TEE device report account credit score.'
 edition = '2021'
 homepage = 'https://litentry.com'
-license = 'Unlicense'
 name = 'pallet-credit-score'
 repository = 'https://github.com/litentry/integritee-node'
 version = '0.1.0'
