@@ -25,7 +25,7 @@ ARG BUILD_ARGS
 
 RUN cargo build --release
 
-COPY target/release/integritee-node /usr/local/bin
+COPY --from=builder /integritee/target/release/integritee-node /usr/local/bin
 RUN chmod +x /usr/local/bin/integritee-node
 
 # checks
