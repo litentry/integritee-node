@@ -2,6 +2,14 @@ name: Build Docker image for integration testing
 
 on:
   push:
+    inputs:
+      docker_tag:
+        description: The tag for the built docker image
+        required: true
+      args:
+        description: Args to pass to `cargo build`, e.g. --features=runtime-benchmarks
+        default: ''
+        required: false
 
 jobs:
   main:
@@ -9,24 +17,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      -
-        name: Checkout
+      - name: Checkout codes on ${{ github.ref }}
         uses: actions/checkout@v2
-      -
-        name: Build Docker image
-        uses: docker/build-push-action@v2
         with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          tags: docker.io/user/app:latest
-          outputs: type=oci,dest=/tmp/image.tar
-      -
-        name: Import image in containerd
-        run: |
-          sudo ctr i import --base-name docker.io/user/app --digests --all-platforms /tmp/image.tar
-      -
-        name: Push image with containerd
-        run: |
-          sudo ctr --debug i push --user "${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }}" docker.io/user/app:latest
+          fetch-depth: 0
 
+      - name: Build docker image
+        run: |
+          ./scripts/build-docker.sh ${{ github.event.inputs.docker_tag }} "${{ github.event.inputs.args }}"
+          echo "============================="
+          docker images
 
+      - name: Push docker image
+        run: |
+          docker push litentry/integritee-node:${{ github.event.inputs.docker_tag }}
+
+      - name: Remove dangling images if any
+        run: |
+          [ -z "$(docker images --filter=dangling=true -q)" ] || docker rmi -f $(docker images --filter=dangling=true -q)
+
+      - name: Copy client binary to disk
+        run: |
+          docker cp $(docker create --rm litentry/integritee-node:${{ github.event.inputs.docker_tag }}):/usr/local/bin/integritee-node .
+
+      - name: Upload the client binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: integritee-node
+          path: |
+            integritee-node
