@@ -1,16 +1,18 @@
-FROM phusion/baseimage:focal-1.0.0
+FROM rust:latest as builder
 LABEL maintainer="dev@litentry.com"
 
 WORKDIR /integritee
-COPY . /integritee
 
-RUN mv /usr/share/ca* /tmp && \
-	rm -rf /usr/share/*  && \
-	mv /tmp/ca-certificates /usr/share/ && \
-	useradd -m -u 1000 -U -s /bin/sh -d /integritee integritee && \
-	mkdir -p /integritee/.local/share/integritee-node && \
-	chown -R integritee:integritee /integritee/.local && \
-	ln -s /integritee/.local/share/integritee-node /data
+
+# RUN mv /usr/share/ca* /tmp && \
+# 	rm -rf /usr/share/*  && \
+# 	mv /tmp/ca-certificates /usr/share/ && \
+# 	useradd -m -u 1000 -U -s /bin/sh -d /integritee integritee && \
+# 	mkdir -p /integritee/.local/share/integritee-node && \
+# 	chown -R integritee:integritee /integritee/.local && \
+# 	ln -s /integritee/.local/share/integritee-node /data
+
+COPY . /integritee
 
 RUN rustup default nightly && \
 	rustup target add wasm32-unknown-unknown --toolchain nightly
@@ -21,7 +23,7 @@ RUN apt-get update && \
 
 ARG BUILD_ARGS
 
-RUN cargo build --release $BUILD_ARGS
+RUN cargo build --release
 
 COPY targer/release/integritee-node /usr/local/bin
 RUN chmod +x /usr/local/bin/integritee-node
