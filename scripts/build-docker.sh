@@ -24,7 +24,7 @@ echo "TAG: $TAG"
 echo "ARGS: $ARGS"
 
 GITUSER=litentry
-GITREPO=litentry-parachain
+GITREPO=integritee-node
 
 # Build the image
 echo "------------------------------------------------------------"
