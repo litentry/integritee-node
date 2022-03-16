@@ -36,7 +36,7 @@ jobs:
 
       - name: Push docker image
         run: |
-          docker push litentry/integritee-node:${{ github.event.inputs.docker_tag }}
+          docker push litentry/integritee-node:latest
 
       - name: Remove dangling images if any
         run: |
@@ -44,7 +44,7 @@ jobs:
 
       - name: Copy client binary to disk
         run: |
-          docker cp $(docker create --rm litentry/integritee-node:${{ github.event.inputs.docker_tag }}):/usr/local/bin/integritee-node .
+          docker cp $(docker create --rm litentry/integritee-node:latest):/usr/local/bin/integritee-node .
 
       - name: Upload the client binary
         uses: actions/upload-artifact@v2
