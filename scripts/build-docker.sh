@@ -31,10 +31,10 @@ echo "------------------------------------------------------------"
 echo "Building ${GITUSER}/${GITREPO}:${TAG} docker image ..."
 docker build --rm --no-cache --pull -f ./docker/Dockerfile \
     --build-arg BUILD_ARGS="$ARGS" \
-    -t ${GITUSER}/${GITREPO}:${TAG} .
+    -t litentry/${GITREPO}:${TAG} .
 
 # Tag it with latest if no tag parameter was provided
-[ -z "$1" ] && docker tag ${GITUSER}/${GITREPO}:${TAG} ${GITUSER}/${GITREPO}:latest
+[ -z "$1" ] && docker tag litentry/${GITREPO}:${TAG} litentry/${GITREPO}:latest
 
 # Show the list of available images for this repo
 echo "Image is ready"
