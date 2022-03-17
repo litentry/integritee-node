@@ -1,18 +1,7 @@
 FROM rust:latest as builder
-# LABEL maintainer="dev@litentry.com"
 
 WORKDIR /integritee
 COPY . /integritee
-
-# RUN mv /usr/share/ca* /tmp && \
-# 	rm -rf /usr/share/*  && \
-# 	mv /tmp/ca-certificates /usr/share/ && \
-# 	useradd -m -u 1000 -U -s /bin/sh -d /integritee integritee && \
-# 	mkdir -p /integritee/.local/share/integritee-node && \
-# 	chown -R integritee:integritee /integritee/.local && \
-# 	ln -s /integritee/.local/share/integritee-node /data
-
-
 
 RUN rustup default nightly && \
 	rustup target add wasm32-unknown-unknown --toolchain nightly
