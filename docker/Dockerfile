@@ -12,7 +12,7 @@ RUN apt-get update && \
 
 ARG BUILD_ARGS
 
-RUN cargo build --release --skip-ias-check $BUILD_ARGS
+RUN cargo build --release --features skip-ias-check $BUILD_ARGS
 
 FROM ubuntu:20.04
 LABEL maintainer="litentry-dev"
