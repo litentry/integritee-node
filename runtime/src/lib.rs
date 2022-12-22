@@ -167,7 +167,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 /// up by `pallet_aura` to implement `fn slot_duration()`.
 ///
 /// Change this to adjust the block time.
-pub const MILLISECS_PER_BLOCK: u64 = 12000;
+pub const MILLISECS_PER_BLOCK: u64 = 1000;
 
 // NOTE: Currently it is not possible to change the slot duration after the chain has started.
 //       Attempting to do so will brick block production.
@@ -633,6 +633,34 @@ impl pallet_preimage::Config for Runtime {
 	type ByteDeposit = PreimageByteDeposit;
 }
 
+/// added by Litentry
+impl pallet_identity_management::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+	type TEECallOrigin = EnsureEnclaveSigner<Runtime>;
+	type DelegateeAdminOrigin = EnsureRoot<AccountId>;
+}
+
+/// added by Litentry
+// EnsureOrigin implementation to make sure the extrinsic origin
+// must come from one of the registered enclaves
+pub struct EnsureEnclaveSigner<T>(sp_std::marker::PhantomData<T>);
+
+impl<T> frame_support::traits::EnsureOrigin<T::RuntimeOrigin> for EnsureEnclaveSigner<T>
+where
+	T: frame_system::Config + pallet_teerex::Config,
+{
+	type Success = T::AccountId;
+	fn try_origin(o: T::RuntimeOrigin) -> Result<Self::Success, T::RuntimeOrigin> {
+		o.into().and_then(|o| match o {
+			frame_system::RawOrigin::Signed(ref who)
+				if pallet_teerex::Pallet::<T>::is_registered_enclave(who) == Ok(true) =>
+				Ok(who.clone()),
+			r => Err(T::RuntimeOrigin::from(r)),
+		})
+	}
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -668,6 +696,8 @@ construct_runtime!(
 		Claims: pallet_claims::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 51,
 		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
 		Sidechain: pallet_sidechain::{Pallet, Call, Storage, Event<T>} = 53,
+
+		IdentityManagement: pallet_identity_management,
 	}
 );
 
