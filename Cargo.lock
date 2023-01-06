@@ -2571,6 +2571,7 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
  "pallet-utility",
+ "pallet-vc-management",
  "pallet-vesting",
  "parity-scale-codec",
  "scale-info",
@@ -4280,6 +4281,24 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-vc-management"
+version = "0.1.0"
+source = "git+https://github.com/litentry/litentry-parachain.git?branch=dev#6545eb2f5fa17bafad6b8d922e512e52eec18016"
+dependencies = [
+ "core-primitives",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-arithmetic",
+ "sp-core",
  "sp-runtime",
  "sp-std",
 ]

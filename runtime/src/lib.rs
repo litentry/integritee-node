@@ -644,6 +644,13 @@ impl pallet_identity_management::Config for Runtime {
 }
 
 /// added by Litentry
+impl pallet_vc_management::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type TEECallOrigin = EnsureEnclaveSigner<Runtime>;
+	type SetAdminOrigin = EnsureRoot<AccountId>;
+}
+
+/// added by Litentry
 // EnsureOrigin implementation to make sure the extrinsic origin
 // must come from one of the registered enclaves
 pub struct EnsureEnclaveSigner<T>(sp_std::marker::PhantomData<T>);
@@ -700,6 +707,7 @@ construct_runtime!(
 		Sidechain: pallet_sidechain::{Pallet, Call, Storage, Event<T>} = 53,
 
 		IdentityManagement: pallet_identity_management,
+		VCManagement: pallet_vc_management,
 	}
 );
 
