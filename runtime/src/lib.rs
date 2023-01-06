@@ -48,7 +48,9 @@ pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{ConstU64, KeyOwnerProofSystem, Randomness, StorageInfo, WithdrawReasons},
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
+		constants::{
+			BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND,
+		},
 		IdentityFee, Weight,
 	},
 	PalletId, RuntimeDebug, StorageValue,
@@ -136,7 +138,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	/// Version of the runtime specification. A full-node will not attempt to use its native
 	/// runtime in substitute for the on-chain Wasm runtime unless all of `spec_name`,
 	/// `spec_version` and `authoring_version` are the same between Wasm and native.
-	spec_version: 27,
+	spec_version: 28,
 
 	/// Version of the implementation of the specification. Nodes are free to ignore this; it
 	/// serves only as an indication that the code is different; as long as the other two versions
@@ -225,7 +227,7 @@ parameter_types! {
 	/// We allow for 2 seconds of compute with a 6 second average block time.
 	pub BlockWeights: frame_system::limits::BlockWeights =
 		frame_system::limits::BlockWeights::with_sensible_defaults(
-			(2u64 * WEIGHT_PER_SECOND).set_proof_size(u64::MAX),
+			Weight::from_parts(2u64 * WEIGHT_REF_TIME_PER_SECOND, u64::MAX),
 			NORMAL_DISPATCH_RATIO,
 		);
 	pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
