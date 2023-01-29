@@ -401,8 +401,8 @@ impl pallet_teerex::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = pallet_balances::Pallet<Runtime>;
 	type MomentsPerDay = MomentsPerDay;
-	type MaxSilenceTime = MaxSilenceTime;
 	type WeightInfo = weights::pallet_teerex::WeightInfo<Runtime>;
+	type DelegateeAdminOrigin = EnsureRoot<AccountId>;
 }
 
 parameter_types! {

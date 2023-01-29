@@ -31,9 +31,9 @@ pallet-utility = { default-features = false, git = "https://github.com/paritytec
 pallet-vesting = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.36" }
 
 pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "master" }
-pallet-sidechain = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "master" }
-pallet-teeracle = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "master" }
-pallet-teerex = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "master" }
+pallet-sidechain = { default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev" }
+pallet-teeracle = { default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev" }
+pallet-teerex = { default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev" }
 
 sp-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.36" }
 sp-block-builder = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.36" }
@@ -62,8 +62,11 @@ frame-system-benchmarking = { default-features = false, optional = true, git = "
 hex-literal = { version = "0.3.1", optional = true }
 
 # Litentry
-pallet-identity-management = {default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev"}
-pallet-vc-management = {default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev"}
+pallet-identity-management = { default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev" }
+pallet-vc-management = { default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev" }
+
+#pallet-identity-management = { default-features = false, path = "../../litentry-parachain/pallets/identity-management" }
+#pallet-vc-management = { default-features = false, path = "../../litentry-parachain/pallets/vc-management" }
 
 [build-dependencies]
 substrate-wasm-builder = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.36" }
