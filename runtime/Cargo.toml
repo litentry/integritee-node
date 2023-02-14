@@ -30,7 +30,7 @@ pallet-treasury = { default-features = false, git = "https://github.com/parityte
 pallet-utility = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.36" }
 pallet-vesting = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.36" }
 
-pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "master" }
+pallet-claims = { default-features = false, git = "https://github.com/integritee-network/pallets.git", branch = "polkadot-v0.9.36" }
 pallet-sidechain = { default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev" }
 pallet-teeracle = { default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev" }
 pallet-teerex = { default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev" }
@@ -65,8 +65,8 @@ hex-literal = { version = "0.3.1", optional = true }
 pallet-identity-management = { default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev" }
 pallet-vc-management = { default-features = false, git = "https://github.com/litentry/litentry-parachain.git", branch = "dev" }
 
-#pallet-identity-management = { default-features = false, path = "../../litentry-parachain/pallets/identity-management" }
-#pallet-vc-management = { default-features = false, path = "../../litentry-parachain/pallets/vc-management" }
+# pallet-identity-management = { default-features = false, path = "../../litentry-parachain/pallets/identity-management" }
+# pallet-vc-management = { default-features = false, path = "../../litentry-parachain/pallets/vc-management" }
 
 [build-dependencies]
 substrate-wasm-builder = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.36" }
@@ -75,6 +75,7 @@ substrate-wasm-builder = { git = "https://github.com/paritytech/substrate.git", 
 default = ["std"]
 skip-ias-check = ["pallet-teerex/skip-ias-check"]
 skip-extrinsic-filtering = []
+skip-scheduled-enclave-check = ["pallet-teerex/skip-scheduled-enclave-check"]
 std = [
     "codec/std",
     "scale-info/std",

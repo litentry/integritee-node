@@ -402,7 +402,7 @@ impl pallet_teerex::Config for Runtime {
 	type Currency = pallet_balances::Pallet<Runtime>;
 	type MomentsPerDay = MomentsPerDay;
 	type WeightInfo = weights::pallet_teerex::WeightInfo<Runtime>;
-	type DelegateeAdminOrigin = EnsureRoot<AccountId>;
+	type EnclaveAdminOrigin = EnsureRoot<AccountId>;
 }
 
 parameter_types! {
