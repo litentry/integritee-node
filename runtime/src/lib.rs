@@ -76,6 +76,8 @@ use scale_info::TypeInfo;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
+use frame_support::traits::EitherOfDiverse;
+use sp_core::ConstU32;
 
 mod weights;
 
@@ -234,6 +236,14 @@ parameter_types! {
 		::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	pub const SS58Prefix: u8 = 13;
 }
+
+/// Instance definition for whitelist or any other kind
+/// Instance here is supposed to control privilege of unlimited group size
+pub type WhitelistInstance = pallet_group::Instance1;
+pub type IMPExtrinsicWhitelistInstance = pallet_group::Instance2;
+pub type VCMPExtrinsicWhitelistInstance = pallet_group::Instance3;
+pub type CouncilInstance = pallet_collective::Instance1;
+
 
 pub struct BaseFilter;
 #[rustfmt::skip]
@@ -394,15 +404,6 @@ impl pallet_sudo::Config for Runtime {
 parameter_types! {
 	pub const MomentsPerDay: Moment = 86_400_000; // [ms/d]
 	pub const MaxSilenceTime: Moment =172_800_000; // 48h
-}
-
-/// added by Integritee
-impl pallet_teerex::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Currency = pallet_balances::Pallet<Runtime>;
-	type MomentsPerDay = MomentsPerDay;
-	type WeightInfo = weights::pallet_teerex::WeightInfo<Runtime>;
-	type EnclaveAdminOrigin = EnsureRoot<AccountId>;
 }
 
 parameter_types! {
@@ -635,12 +636,49 @@ impl pallet_preimage::Config for Runtime {
 	type ByteDeposit = PreimageByteDeposit;
 }
 
+parameter_types! {
+	pub const CouncilMotionDuration: BlockNumber = 3 * DAYS;
+	pub const CouncilDefaultMaxMembers: u32 = 100;
+}
+
+impl pallet_collective::Config<CouncilInstance> for Runtime {
+	type RuntimeOrigin = RuntimeOrigin;
+	type Proposal = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type MotionDuration = CouncilMotionDuration;
+	type MaxProposals = ConstU32<100>;
+	type MaxMembers = CouncilDefaultMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
+}
+
+/// Type definition for various proportions of council and technical committee
+/// Council
+pub type EnsureRootOrAllCouncil = EitherOfDiverse<
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 1, 1>,
+>;
+
+/// added by Litentry
+impl pallet_teerex::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type MomentsPerDay = MomentsPerDay;
+	// TODO: the generated runtime weights file is incomplete
+	//       we are missing `register_dcap_enclave` and `register_quoting_enclave`
+	//       it should be re-benchmarked once the upstream fixes it
+	type WeightInfo = ();
+	type SetEnclaveAdminOrigin =  EnsureRoot<AccountId>;
+}
+
 /// added by Litentry
 impl pallet_identity_management::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type TEECallOrigin = EnsureEnclaveSigner<Runtime>;
 	type DelegateeAdminOrigin = EnsureRoot<AccountId>;
+
+	type ExtrinsicWhitelistOrigin = IMPExtrinsicWhitelist;
 }
 
 /// added by Litentry
@@ -648,6 +686,26 @@ impl pallet_vc_management::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type TEECallOrigin = EnsureEnclaveSigner<Runtime>;
 	type SetAdminOrigin = EnsureRoot<AccountId>;
+	type ExtrinsicWhitelistOrigin = VCMPExtrinsicWhitelist;
+}
+
+impl pallet_group::Config<IMPExtrinsicWhitelistInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type GroupManagerOrigin = EnsureRoot<AccountId>;
+}
+
+// This code should be safe to add
+/// Temporary adjust for whitelist function
+impl pallet_group::Config<WhitelistInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type GroupManagerOrigin = EnsureRoot<AccountId>;
+}
+
+// This code should be safe to add
+/// Temporary adjust for whitelist function
+impl pallet_group::Config<VCMPExtrinsicWhitelistInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type GroupManagerOrigin = EnsureRoot<AccountId>;
 }
 
 /// added by Litentry
@@ -696,6 +754,7 @@ construct_runtime!(
 		// consensus
 		Aura: pallet_aura::{Pallet, Config<T>} = 23,
 		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event} = 24,
+		Council: pallet_collective::<Instance1> = 22,
 
 		// governance
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 30,
@@ -708,6 +767,10 @@ construct_runtime!(
 
 		IdentityManagement: pallet_identity_management,
 		VCManagement: pallet_vc_management,
+
+		Whitelist: pallet_group::<Instance1> = 101,
+		IMPExtrinsicWhitelist: pallet_group::<Instance2> = 102,
+		VCMPExtrinsicWhitelist: pallet_group::<Instance3> = 103,
 	}
 );
 

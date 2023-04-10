@@ -373,6 +373,7 @@ fn genesis_config(
 		claims: Default::default(),
 		treasury: Default::default(),
 		vesting: Default::default(),
+		council: Default::default(),
 	}
 }
 
