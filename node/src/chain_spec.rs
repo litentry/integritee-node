@@ -1,7 +1,8 @@
 use hex::ToHex;
 use integritee_node_runtime::{
 	AccountId, AuraConfig, Balance, BalancesConfig, GenesisConfig, GrandpaConfig, Multisig,
-	Signature, SudoConfig, SystemConfig, TeerexConfig, TreasuryPalletId, TEER, WASM_BINARY,
+	Signature, SudoConfig, SystemConfig, TeerexConfig, TreasuryPalletId, VCManagementConfig, TEER,
+	WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -367,9 +368,10 @@ fn genesis_config(
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.
-			key: Some(root_key),
+			key: Some(root_key.clone()),
 		},
-		teerex: TeerexConfig { allow_sgx_debug_mode: true },
+		teerex: TeerexConfig { allow_sgx_debug_mode: true, admin: Some(root_key.clone()) },
+		vc_management: VCManagementConfig { admin: Some(root_key) },
 		claims: Default::default(),
 		treasury: Default::default(),
 		vesting: Default::default(),

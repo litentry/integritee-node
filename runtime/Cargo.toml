@@ -113,6 +113,7 @@ std = [
     "sp-std/std",
     "sp-transaction-pool/std",
     "sp-version/std",
+    "pallet-vc-management/std",
     "pallet-teerex/std",
     "pallet-claims/std",
     "pallet-proxy/std",

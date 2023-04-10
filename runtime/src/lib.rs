@@ -62,6 +62,8 @@ use frame_support::{
 pub use frame_system::Call as SystemCall;
 use frame_system::EnsureRoot;
 pub use pallet_balances::Call as BalancesCall;
+
+use frame_support::traits::EitherOfDiverse;
 /// added by Integritee
 pub use pallet_claims;
 /// added by Integritee
@@ -73,11 +75,10 @@ pub use pallet_teerex;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 use scale_info::TypeInfo;
+use sp_core::ConstU32;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
-use frame_support::traits::EitherOfDiverse;
-use sp_core::ConstU32;
 
 mod weights;
 
@@ -243,7 +244,6 @@ pub type WhitelistInstance = pallet_group::Instance1;
 pub type IMPExtrinsicWhitelistInstance = pallet_group::Instance2;
 pub type VCMPExtrinsicWhitelistInstance = pallet_group::Instance3;
 pub type CouncilInstance = pallet_collective::Instance1;
-
 
 pub struct BaseFilter;
 #[rustfmt::skip]
@@ -668,7 +668,7 @@ impl pallet_teerex::Config for Runtime {
 	//       we are missing `register_dcap_enclave` and `register_quoting_enclave`
 	//       it should be re-benchmarked once the upstream fixes it
 	type WeightInfo = ();
-	type SetEnclaveAdminOrigin =  EnsureRoot<AccountId>;
+	type SetAdminOrigin = EnsureRoot<AccountId>;
 }
 
 /// added by Litentry
@@ -760,7 +760,7 @@ construct_runtime!(
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 30,
 
 		// utility
-		Teerex: pallet_teerex::{Pallet, Call, Config, Storage, Event<T>} = 50,
+		Teerex: pallet_teerex = 50,
 		Claims: pallet_claims::{Pallet, Call, Storage, Config<T>, Event<T>, ValidateUnsigned} = 51,
 		Teeracle: pallet_teeracle::{Pallet, Call, Storage, Event<T>} = 52,
 		Sidechain: pallet_sidechain::{Pallet, Call, Storage, Event<T>} = 53,

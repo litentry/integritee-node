@@ -4805,6 +4805,7 @@ name = "pallet-vc-management"
 version = "0.1.0"
 dependencies = [
  "core-primitives",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "hex",
