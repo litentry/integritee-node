@@ -240,9 +240,9 @@ parameter_types! {
 
 /// Instance definition for whitelist or any other kind
 /// Instance here is supposed to control privilege of unlimited group size
-pub type WhitelistInstance = pallet_group::Instance1;
-pub type IMPExtrinsicWhitelistInstance = pallet_group::Instance2;
-pub type VCMPExtrinsicWhitelistInstance = pallet_group::Instance3;
+pub type IMPExtrinsicWhitelistInstance = pallet_group::Instance1;
+pub type VCMPExtrinsicWhitelistInstance = pallet_group::Instance2;
+
 pub type CouncilInstance = pallet_collective::Instance1;
 
 pub struct BaseFilter;
@@ -323,7 +323,7 @@ impl frame_system::Config for Runtime {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-impl pallet_randomness_collective_flip::Config for Runtime {}
+impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
 
 parameter_types! {
 	pub const MaxAuthorities: u32 = 32;
@@ -335,6 +335,9 @@ impl pallet_aura::Config for Runtime {
 	type MaxAuthorities = MaxAuthorities;
 }
 
+parameter_types! {
+	pub const MaxSetIdSessionEntries: u64 = 64;
+}
 impl pallet_grandpa::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 
@@ -353,6 +356,8 @@ impl pallet_grandpa::Config for Runtime {
 	type WeightInfo = ();
 
 	type MaxAuthorities = MaxAuthorities;
+
+	type MaxSetIdSessionEntries = MaxSetIdSessionEntries;
 }
 
 impl pallet_timestamp::Config for Runtime {
@@ -650,6 +655,7 @@ impl pallet_collective::Config<CouncilInstance> for Runtime {
 	type MaxMembers = CouncilDefaultMaxMembers;
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = weights::pallet_collective::WeightInfo<Runtime>;
+	type SetMembersOrigin = EnsureRoot<AccountId>;
 }
 
 /// Type definition for various proportions of council and technical committee
@@ -687,16 +693,10 @@ impl pallet_vc_management::Config for Runtime {
 	type TEECallOrigin = EnsureEnclaveSigner<Runtime>;
 	type SetAdminOrigin = EnsureRoot<AccountId>;
 	type ExtrinsicWhitelistOrigin = VCMPExtrinsicWhitelist;
+	type WeightInfo = weights::pallet_vc_management::WeightInfo<Runtime>;
 }
 
 impl pallet_group::Config<IMPExtrinsicWhitelistInstance> for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type GroupManagerOrigin = EnsureRoot<AccountId>;
-}
-
-// This code should be safe to add
-/// Temporary adjust for whitelist function
-impl pallet_group::Config<WhitelistInstance> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type GroupManagerOrigin = EnsureRoot<AccountId>;
 }
@@ -713,17 +713,19 @@ impl pallet_group::Config<VCMPExtrinsicWhitelistInstance> for Runtime {
 // must come from one of the registered enclaves
 pub struct EnsureEnclaveSigner<T>(sp_std::marker::PhantomData<T>);
 
-impl<T> frame_support::traits::EnsureOrigin<T::RuntimeOrigin> for EnsureEnclaveSigner<T>
+impl<T> frame_support::traits::EnsureOrigin<<T as frame_system::Config>::RuntimeOrigin> for EnsureEnclaveSigner<T>
 where
 	T: frame_system::Config + pallet_teerex::Config,
+	<T as frame_system::Config>::AccountId: From<[u8; 32]>,
+	<T as frame_system::Config>::Hash: From<[u8; 32]>,
 {
-	type Success = T::AccountId;
-	fn try_origin(o: T::RuntimeOrigin) -> Result<Self::Success, T::RuntimeOrigin> {
+	type Success = <T as frame_system::Config>::AccountId;
+	fn try_origin(o: <T as frame_system::Config>::RuntimeOrigin) -> Result<Self::Success, <T as frame_system::Config>::RuntimeOrigin> {
 		o.into().and_then(|o| match o {
 			frame_system::RawOrigin::Signed(ref who)
 				if pallet_teerex::Pallet::<T>::ensure_registered_enclave(who) == Ok(()) =>
 				Ok(who.clone()),
-			r => Err(T::RuntimeOrigin::from(r)),
+			r => Err(<T as frame_system::Config>::RuntimeOrigin::from(r)),
 		})
 	}
 }
@@ -738,7 +740,7 @@ construct_runtime!(
 		// Basic
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>} = 0,
 		Preimage: pallet_preimage = 1,
-		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 2,
+		InsecureRandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip::{Pallet, Storage} = 2,
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 3,
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 5,
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 6,
@@ -768,9 +770,8 @@ construct_runtime!(
 		IdentityManagement: pallet_identity_management,
 		VCManagement: pallet_vc_management,
 
-		Whitelist: pallet_group::<Instance1> = 101,
-		IMPExtrinsicWhitelist: pallet_group::<Instance2> = 102,
-		VCMPExtrinsicWhitelist: pallet_group::<Instance3> = 103,
+		IMPExtrinsicWhitelist: pallet_group::<Instance1> = 102,
+		VCMPExtrinsicWhitelist: pallet_group::<Instance2> = 103,
 	}
 );
 
@@ -954,6 +955,12 @@ impl_runtime_apis! {
 		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_fee_details(uxt, len)
 		}
+		fn query_weight_to_fee(weight: Weight) -> Balance {
+			TransactionPayment::weight_to_fee(weight)
+		}
+		fn query_length_to_fee(length: u32) -> Balance {
+			TransactionPayment::length_to_fee(length)
+		}
 	}
 
 	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentCallApi<Block, Balance, RuntimeCall>
@@ -970,6 +977,12 @@ impl_runtime_apis! {
 			len: u32,
 		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_call_fee_details(call, len)
+		}
+		fn query_weight_to_fee(weight: Weight) -> Balance {
+			TransactionPayment::weight_to_fee(weight)
+		}
+		fn query_length_to_fee(length: u32) -> Balance {
+			TransactionPayment::length_to_fee(length)
 		}
 	}
 
