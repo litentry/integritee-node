@@ -675,6 +675,7 @@ impl pallet_teerex::Config for Runtime {
 	//       it should be re-benchmarked once the upstream fixes it
 	type WeightInfo = ();
 	type SetAdminOrigin = EnsureRoot<AccountId>;
+	type MaxSilenceTime = MaxSilenceTime;
 }
 
 /// added by Litentry
