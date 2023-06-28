@@ -684,6 +684,7 @@ impl pallet_identity_management::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type TEECallOrigin = EnsureEnclaveSigner<Runtime>;
+
 	type DelegateeAdminOrigin = EnsureRoot<AccountId>;
 
 	type ExtrinsicWhitelistOrigin = IMPExtrinsicWhitelist;
@@ -693,6 +694,9 @@ impl pallet_identity_management::Config for Runtime {
 impl pallet_vc_management::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type TEECallOrigin = EnsureEnclaveSigner<Runtime>;
+
+	type DelegateeAdminOrigin = EnsureRoot<AccountId>;
+
 	type SetAdminOrigin = EnsureRoot<AccountId>;
 	type ExtrinsicWhitelistOrigin = VCMPExtrinsicWhitelist;
 	type WeightInfo = weights::pallet_vc_management::WeightInfo<Runtime>;
