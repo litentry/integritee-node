@@ -673,6 +673,8 @@ impl pallet_teerex::Config for Runtime {
 	// TODO: the generated runtime weights file is incomplete
 	//       we are missing `register_dcap_enclave` and `register_quoting_enclave`
 	//       it should be re-benchmarked once the upstream fixes it
+	type MaxSilenceTime = MaxSilenceTime;
+
 	type WeightInfo = ();
 	type SetAdminOrigin = EnsureRoot<AccountId>;
 	type MaxSilenceTime = MaxSilenceTime;
@@ -683,6 +685,7 @@ impl pallet_identity_management::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type TEECallOrigin = EnsureEnclaveSigner<Runtime>;
+
 	type DelegateeAdminOrigin = EnsureRoot<AccountId>;
 
 	type ExtrinsicWhitelistOrigin = IMPExtrinsicWhitelist;
@@ -692,6 +695,9 @@ impl pallet_identity_management::Config for Runtime {
 impl pallet_vc_management::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type TEECallOrigin = EnsureEnclaveSigner<Runtime>;
+
+	type DelegateeAdminOrigin = EnsureRoot<AccountId>;
+
 	type SetAdminOrigin = EnsureRoot<AccountId>;
 	type ExtrinsicWhitelistOrigin = VCMPExtrinsicWhitelist;
 	type WeightInfo = weights::pallet_vc_management::WeightInfo<Runtime>;
@@ -714,14 +720,17 @@ impl pallet_group::Config<VCMPExtrinsicWhitelistInstance> for Runtime {
 // must come from one of the registered enclaves
 pub struct EnsureEnclaveSigner<T>(sp_std::marker::PhantomData<T>);
 
-impl<T> frame_support::traits::EnsureOrigin<<T as frame_system::Config>::RuntimeOrigin> for EnsureEnclaveSigner<T>
+impl<T> frame_support::traits::EnsureOrigin<<T as frame_system::Config>::RuntimeOrigin>
+	for EnsureEnclaveSigner<T>
 where
 	T: frame_system::Config + pallet_teerex::Config,
 	<T as frame_system::Config>::AccountId: From<[u8; 32]>,
 	<T as frame_system::Config>::Hash: From<[u8; 32]>,
 {
 	type Success = <T as frame_system::Config>::AccountId;
-	fn try_origin(o: <T as frame_system::Config>::RuntimeOrigin) -> Result<Self::Success, <T as frame_system::Config>::RuntimeOrigin> {
+	fn try_origin(
+		o: <T as frame_system::Config>::RuntimeOrigin,
+	) -> Result<Self::Success, <T as frame_system::Config>::RuntimeOrigin> {
 		o.into().and_then(|o| match o {
 			frame_system::RawOrigin::Signed(ref who)
 				if pallet_teerex::Pallet::<T>::ensure_registered_enclave(who) == Ok(()) =>

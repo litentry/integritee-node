@@ -145,4 +145,15 @@ impl<T: frame_system::Config> pallet_vc_management::WeightInfo for WeightInfo<T>
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes((1_u64).saturating_mul(x.into())))
 	}
+	// Storage: IdentityManagement Delegatee (r:0 w:1)
+	fn add_delegatee() -> Weight {
+		Weight::from_ref_time(14_455_000 as u64)
+			.saturating_add(T::DbWeight::get().writes(1 as u64))
+	}
+	// Storage: IdentityManagement Delegatee (r:1 w:1)
+	fn remove_delegatee() -> Weight {
+		Weight::from_ref_time(21_428_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(1 as u64))
+			.saturating_add(T::DbWeight::get().writes(1 as u64))
+	}
 }
