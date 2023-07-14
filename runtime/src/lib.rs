@@ -673,8 +673,6 @@ impl pallet_teerex::Config for Runtime {
 	// TODO: the generated runtime weights file is incomplete
 	//       we are missing `register_dcap_enclave` and `register_quoting_enclave`
 	//       it should be re-benchmarked once the upstream fixes it
-	type MaxSilenceTime = MaxSilenceTime;
-
 	type WeightInfo = ();
 	type SetAdminOrigin = EnsureRoot<AccountId>;
 	type MaxSilenceTime = MaxSilenceTime;
